@@ -1,5 +1,11 @@
 using DataStructures
 using Formatting
+using ScikitLearn
+@sk_import naive_bayes: GaussianNB
+@sk_import metrics: accuracy_score
+
+TRAIN_DIR = "./machine-learning-101/chapter1/train-mails"
+TEST_DIR = "./machine-learning-101/chapter1/test-mails"
 
 most_common(c::Accumulator) = most_common(c, length(c))
 most_common(c::Accumulator, k) = sort(collect(c), by=kv->kv[2], rev=true)[1:k]
@@ -83,9 +89,19 @@ function extract_features(mail_dir, dict)
     (features_matrix, train_labels)
 end
 
+dict = make_dictionary(TRAIN_DIR)
 
+(features_matrix, labels) = extract_features(TRAIN_DIR, dict)
+(test_features_matrix, test_labels) = extract_features(TEST_DIR, dict)
 
-d = make_dictionary("machine-learning-101/chapter1/train-mails")
-(f, t) = extract_features("./machine-learning-101/chapter1/train-mails", d)
+model = GaussianNB()
+# train model
+fit!(model, features_matrix, labels)
+# predict
+predicted_labels = predict(model, test_features_matrix)
 
-# println(f)
+accuracy = accuracy_score(test_labels, predicted_labels)
+
+printfmt("accuracy of prediction {}", accuracy)
+
+# println(predicted_labels[132])
